@@ -2,6 +2,8 @@ package com.Geeksproject.MovieReview.dto;
 
 
 
+import java.io.Serializable;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +16,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 @Builder
-public class ReviewDto {
+public class ReviewDto implements Serializable{
 
 	private Long id;
 

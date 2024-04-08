@@ -1,5 +1,6 @@
 package com.Geeksproject.MovieReview.dto;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -18,7 +19,7 @@ import lombok.ToString;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class MovieDto {
+public class MovieDto implements Serializable{
 
 private Long id;
 
@@ -30,7 +31,8 @@ private Long id;
 	private Double rating;
 
 
-	private List<Review> review;
+	
+	private List<ReviewDto> review;
 
 
 	private Date createdDate;

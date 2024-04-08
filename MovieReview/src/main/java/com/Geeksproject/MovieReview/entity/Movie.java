@@ -1,6 +1,7 @@
 package com.Geeksproject.MovieReview.entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -8,6 +9,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.Geeksproject.MovieReview.dto.MovieDto;
+import com.Geeksproject.MovieReview.dto.ReviewDto;
 import com.Geeksproject.MovieReview.enums.Genre;
 
 import jakarta.persistence.Entity;
@@ -62,8 +64,15 @@ public class Movie implements Serializable {
 	    			       .title(this.title)
 	    			       .genre(this.genre)
 	    			       .rating(this.rating)
-	    			       .review(this.review)
 	    			       .build();
 	    }
+	 public List<ReviewDto> getReviewDto()
+	 {
+		 ArrayList<ReviewDto> reviewsDto=new ArrayList<>();
+		 for (Review review2 : review) {
+			 reviewsDto.add(review2.getReviewDto());
+		}
+		 return reviewsDto;
+	 }
 
 }

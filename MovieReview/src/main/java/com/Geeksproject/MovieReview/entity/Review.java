@@ -1,5 +1,7 @@
 package com.Geeksproject.MovieReview.entity;
 
+import java.io.Serializable;
+
 import com.Geeksproject.MovieReview.dto.ReviewDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -21,7 +23,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class Review {
+public class Review implements Serializable {
 
 
 	@Id
