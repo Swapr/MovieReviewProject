@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-import com.Geeksproject.MovieReview.entity.Review;
 import com.Geeksproject.MovieReview.enums.Genre;
 
 import lombok.AllArgsConstructor;

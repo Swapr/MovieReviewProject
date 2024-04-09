@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -36,21 +37,30 @@ public class MovieService {
 	
 	public MovieDto getMovie(String title)
 	{
-		
-		MovieDto movieDto2 = redisTemplate.opsForValue().get(title+1);      //saving different key for this movie because same key is used for  getMovieReview which fetching wrong data from redis .
-		if(movieDto2!=null)
+		MovieDto movieDto2=null;
+		try {
+			 movieDto2 = redisTemplate.opsForValue().get(title+1);     //saving different key for this movie because same key is used for  getMovieReview which fetching wrong data from redis .
+				if(movieDto2!=null)
+				{
+					return movieDto2;
+				}
+		}catch (RedisConnectionFailureException e)
 		{
-			return movieDto2;
+			System.out.println("redis is not available");
 		}
+		
 		Movie movie = movieRepo.findBytitleIgnoreCase(title);
 		if(movie!=null)
 		{
 			MovieDto movieDtoresponse = movie.getMovieDtoresponse();                  
 			List<ReviewDto> reviewDtos= movie.getReviewDto();                                       
 			movieDtoresponse.setReview(reviewDtos);                                            // setting Review dto in movieDto for parsing .
-			redisTemplate.opsForValue().set(title+1, movieDtoresponse, 10, TimeUnit.SECONDS);    //saving in cache
-			
-		return movieDtoresponse;
+			try { 
+				redisTemplate.opsForValue().set(title+1, movieDtoresponse, 10, TimeUnit.SECONDS);   	   //saving in cache
+			}catch (Exception e) {
+				
+			}	
+		    return movieDtoresponse;
 		}
 		else
 			return null;
@@ -58,8 +68,14 @@ public class MovieService {
 	
 	
 
-	public Movie addMovie(Movie movie)
+	public Movie addMovie(Movie movie )
 	{
+		if(movieRepo.existsBytitleIgnoreCase(movie.getTitle()))
+		{
+			
+			System.out.println("movie already present with same title");
+			return null; 
+		}
 		Movie movie1 = movieRepo.save(movie);
 		return movie1;
 
@@ -73,42 +89,46 @@ public class MovieService {
 	public List<MovieDto> getMovieByGenre(Genre genre)      // we will send only to 5 rated movies for specefic genre
 	{
 
-		String string = redisTemplate3.opsForValue().get(genre.toString());         //used storing list as string in redis and then getting as string and conveting string to list
-		System.out.println(string);
-		if(string!=null)
-		{
-			String string2 = string.substring(1, string.length()-1);
-			List<MovieDto> list = convertStringToList(string2);
-			System.out.println("cache hit");
-			return list;
-		}
-		List<Movie> movieList = movieRepo.findAllByGenre(genre);
-		List<MovieDto> movieDtos=new ArrayList<>();
-		if(!movieList.isEmpty())
-		{
-
-			for (Movie movie : movieList) {
-				MovieDto movieDto = movie.getMovieDtoresponse();
-				movieDto.setReview(movie.getReviewDto());
-				movieDtos.add(movieDto);
-				
+		try {
+			String string = redisTemplate3.opsForValue().get(genre.toString());
+			if(string!=null)
+			{
+				String string2 = string.substring(1, string.length()-1);
+				List<MovieDto> list = convertStringToList(string2);
+				System.out.println("cache hit");
+				return list;
 			}
 		}
-
-		List<MovieDto> sortedMovieDtos = movieDtos.stream()
-		         .sorted(Comparator.comparing(MovieDto::getRating).reversed())
-		         .collect(Collectors.toList());
-
-
-		if(sortedMovieDtos.size()>5)
-		{
-			List<MovieDto> movieDtos2=sortedMovieDtos.subList(0, 4);
-			String convertListToString2=convertListToString(movieDtos2);
-			redisTemplate3.opsForValue().set(genre.toString(),convertListToString2 , 60, TimeUnit.SECONDS);
+		catch (RedisConnectionFailureException e) {
+		    // Handle the Redis connection failure exception here
+			System.out.println("issue in redis server ");
+		    
 		}
+		         //used storing list as string in redis and then getting as string and conveting string to list
+		
+		List<Movie> movieList = movieRepo.findAllByGenre(genre);
+
+		List<MovieDto> sortedMovieDtos=movieList.stream()
+				                                .map(movie->{
+				                                	MovieDto movieDtoresponse = movie.getMovieDtoresponse();
+				                                	movieDtoresponse.setReview(movie.getReviewDto());
+				                                	return movieDtoresponse;
+				                                })
+				                                .sorted(Comparator.comparing(MovieDto::getRating).reversed())
+				                                .limit(5)
+				                                .collect(Collectors.toList());
+		
+
 			String convertListToString = convertListToString(sortedMovieDtos);
-		redisTemplate3.opsForValue().set(genre.toString(),convertListToString , 60, TimeUnit.SECONDS);
-		return movieDtos;
+			try {
+				redisTemplate3.opsForValue().set(genre.toString(),convertListToString , 60, TimeUnit.SECONDS);
+			}
+			catch (RedisConnectionFailureException e) {
+			    // Handle the Redis connection failure exception here
+			    
+			}
+		
+		return sortedMovieDtos;
 
 	}
 

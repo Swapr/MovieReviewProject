@@ -4,7 +4,10 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import com.Geeksproject.MovieReview.dto.ReviewDto;
@@ -68,7 +71,13 @@ public class ReviewService {
 	public List<ReviewDto> getMovieReview(String movieName)        // get Review List for movie name
 	{
 		System.out.println("Request come for this movie-"+movieName);
-		String reviewDtosFromCache=redisTemplate.opsForValue().get(movieName);            //getting from cache if present
+		String reviewDtosFromCache=null;
+		try {
+			 reviewDtosFromCache =redisTemplate.opsForValue().get(movieName);            //getting from cache if present
+		}catch (RedisConnectionFailureException e) {
+			System.out.println("redis is not available");
+		}
+		
 		if(reviewDtosFromCache!=null)
 		{
 			System.out.println("cache hit");
@@ -79,15 +88,21 @@ public class ReviewService {
 		{
 		Movie movie = movieRepo.findBytitleIgnoreCase(movieName);
 		List<Review> reviewList = reviewRepo.findAllByMovieId(movie.getId());
-		ArrayList<ReviewDto> reviewDtos=new ArrayList<>();
-		for (Review review : reviewList) {
-			ReviewDto reviewDto=review.getReviewDto();
-			reviewDto.setTitle(movieName);
-			reviewDtos.add(reviewDto);
 
-		  }
+		List<ReviewDto> reviewDtos = reviewList.stream()
+		          .map(review->{
+		        	  ReviewDto reviewDto=review.getReviewDto();
+		        	  reviewDto.setTitle(movieName);
+		        	  return reviewDto;
+		          })
+		          .collect(Collectors.toList());
+
 		String stringobject=convertListToString(reviewDtos);
-		redisTemplate.opsForValue().set(movieName, stringobject, 60, TimeUnit.SECONDS);     //setting in cache 
+		try {
+		      redisTemplate.opsForValue().set(movieName, stringobject, 60, TimeUnit.SECONDS);     //setting in cache
+		}catch (RedisConnectionFailureException e) {
+			
+		}
 		return reviewDtos;
 		}
 		else
