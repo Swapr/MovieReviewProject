@@ -39,6 +39,7 @@ public class MovieService {
 	{
 		MovieDto movieDto2=null;
 		try {
+			redisTemplate.opsForValue();                                //for checking wheter redis bean is injected ir not //for checking wheter redis bean is injected ir not 
 			 movieDto2 = redisTemplate.opsForValue().get(title+1);     //saving different key for this movie because same key is used for  getMovieReview which fetching wrong data from redis .
 				if(movieDto2!=null)
 				{
@@ -48,7 +49,10 @@ public class MovieService {
 		{
 			System.out.println("redis is not available");
 		}
-		
+		catch(NullPointerException e)
+		{
+			System.out.println("redis bean is not available");
+		}
 		Movie movie = movieRepo.findBytitleIgnoreCase(title);
 		if(movie!=null)
 		{
@@ -56,10 +60,12 @@ public class MovieService {
 			List<ReviewDto> reviewDtos= movie.getReviewDto();                                       
 			movieDtoresponse.setReview(reviewDtos);                                            // setting Review dto in movieDto for parsing .
 			try { 
+				redisTemplate.opsForValue();                                              //for checking wheter redis bean is injected ir not 
 				redisTemplate.opsForValue().set(title+1, movieDtoresponse, 10, TimeUnit.SECONDS);   	   //saving in cache
 			}catch (Exception e) {
 				
 			}	
+			
 		    return movieDtoresponse;
 		}
 		else
@@ -90,6 +96,7 @@ public class MovieService {
 	{
 
 		try {
+			redisTemplate.opsForValue();                                              //for checking wheter redis bean is injected ir not 
 			String string = redisTemplate3.opsForValue().get(genre.toString());
 			if(string!=null)
 			{
@@ -103,6 +110,10 @@ public class MovieService {
 		    // Handle the Redis connection failure exception here
 			System.out.println("issue in redis server ");
 		    
+		}
+		catch(NullPointerException e)
+		{
+			System.out.println("redis bean is not available");
 		}
 		         //used storing list as string in redis and then getting as string and conveting string to list
 		
@@ -121,11 +132,16 @@ public class MovieService {
 
 			String convertListToString = convertListToString(sortedMovieDtos);
 			try {
+				redisTemplate.opsForValue();                                              //for checking wheter redis bean is injected ir not 
 				redisTemplate3.opsForValue().set(genre.toString(),convertListToString , 60, TimeUnit.SECONDS);
 			}
 			catch (RedisConnectionFailureException e) {
 			    // Handle the Redis connection failure exception here
 			    
+			}
+			catch(NullPointerException e)
+			{
+				System.out.println("redis bean is not available");
 			}
 		
 		return sortedMovieDtos;

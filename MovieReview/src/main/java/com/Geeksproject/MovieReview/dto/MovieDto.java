@@ -1,7 +1,7 @@
 package com.Geeksproject.MovieReview.dto;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.Geeksproject.MovieReview.enums.Genre;
@@ -34,8 +34,8 @@ private Long id;
 	private List<ReviewDto> review;
 
 
-	private Date createdDate;
+	private LocalDateTime createdDate;
 
-	private Date updatedDate;
+	private LocalDateTime updatedDate;
 
 }

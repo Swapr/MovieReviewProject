@@ -11,7 +11,7 @@ public interface ReviewRepo extends JpaRepository<Review, Long> {
 
 	public List<Review> findAllByMovieId(Long  id);
 
-	@Query(value ="select avg(rating) from review where movie_id=1" ,nativeQuery = true )
+	@Query(value ="select avg(rating) from review where movie_id=?1" ,nativeQuery = true )
 	public Double getRatingAverage(Long id);
 
 }

@@ -1,8 +1,8 @@
 package com.Geeksproject.MovieReview.entity;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -53,10 +53,10 @@ public class Movie implements Serializable {
 	private List<Review> review;
 
 	@CreationTimestamp
-	private Date createdDate;
+	private LocalDateTime createdDate;
 
 	@UpdateTimestamp
-	private Date updatedDate;
+	private LocalDateTime updatedDate;
 
 	 public MovieDto getMovieDtoresponse()
 	    {
@@ -69,10 +69,17 @@ public class Movie implements Serializable {
 	 public List<ReviewDto> getReviewDto()
 	 {
 		 ArrayList<ReviewDto> reviewsDto=new ArrayList<>();
-		 for (Review review2 : review) {
-			 reviewsDto.add(review2.getReviewDto());
+		 
+		 try {
+			for (Review review2 : review) {
+				 reviewsDto.add(review2.getReviewDto());
+			}
+			 return reviewsDto;
+		} catch (NullPointerException e) {
+			System.out.println("review is empty");
+			return null;
 		}
-		 return reviewsDto;
 	 }
 
 }
+

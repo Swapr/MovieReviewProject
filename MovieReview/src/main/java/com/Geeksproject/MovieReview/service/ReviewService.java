@@ -77,6 +77,9 @@ public class ReviewService {
 		}catch (RedisConnectionFailureException e) {
 			System.out.println("redis is not available");
 		}
+		catch (NullPointerException e) {
+			System.out.println("redis bean not available");
+		}
 		
 		if(reviewDtosFromCache!=null)
 		{
@@ -102,6 +105,9 @@ public class ReviewService {
 		      redisTemplate.opsForValue().set(movieName, stringobject, 60, TimeUnit.SECONDS);     //setting in cache
 		}catch (RedisConnectionFailureException e) {
 			
+		}
+		catch (NullPointerException e) {
+			System.out.println("redis bean not available");
 		}
 		return reviewDtos;
 		}
