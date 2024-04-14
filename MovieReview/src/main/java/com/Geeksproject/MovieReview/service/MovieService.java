@@ -96,7 +96,7 @@ public class MovieService {
 	{
 
 		try {
-			redisTemplate.opsForValue();                                              //for checking wheter redis bean is injected ir not 
+			redisTemplate3.opsForValue();                                              //for checking wheter redis bean is injected ir not 
 			String string = redisTemplate3.opsForValue().get(genre.toString());
 			if(string!=null)
 			{
@@ -132,7 +132,7 @@ public class MovieService {
 
 			String convertListToString = convertListToString(sortedMovieDtos);
 			try {
-				redisTemplate.opsForValue();                                              //for checking wheter redis bean is injected ir not 
+				redisTemplate3.opsForValue();                                              //for checking wheter redis bean is injected ir not 
 				redisTemplate3.opsForValue().set(genre.toString(),convertListToString , 60, TimeUnit.SECONDS);
 			}
 			catch (RedisConnectionFailureException e) {

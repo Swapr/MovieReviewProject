@@ -78,7 +78,7 @@ public class ReviewService {
 			System.out.println("redis is not available");
 		}
 		catch (NullPointerException e) {
-			System.out.println("redis bean not available");
+			
 		}
 		
 		if(reviewDtosFromCache!=null)
@@ -107,7 +107,7 @@ public class ReviewService {
 			
 		}
 		catch (NullPointerException e) {
-			System.out.println("redis bean not available");
+			
 		}
 		return reviewDtos;
 		}
